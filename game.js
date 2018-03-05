@@ -90,3 +90,92 @@ class Actor {
         }
     }
 }
+
+function getPlayer(actors) {
+    let player = actors.find((el) => el.type === 'player');
+    return player;
+}
+
+function getWidth(grid) {
+    let maxWidth = 0;
+    grid.map((el) => {
+        if (el.length > maxWidth) {
+            maxWidth = el.length;
+        }
+    });
+    return maxWidth;
+}
+
+class Level {
+    constructor(grid, actors) {
+        this.grid = grid;
+        this.actors = actors;
+        this.player = getPlayer(actors);
+        this.height = grid.length;
+        this.width = getWidth(grid);
+        this.status = null;
+        this.finishDelay = 1;
+    }
+
+    isFinished() {
+        if (this.status !== null && this.finishDelay < 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    actorAt(actor) {
+        try {
+            if (typeof actor === 'undefined' || actor instanceof Actor === false) {
+                throw `Неверно передан аргумент`;
+            }
+
+            if (this.isIntersect(actor)) {
+                return actor;
+            }
+            else {
+                return undefined;
+            }
+
+        } catch (error) {
+            console.log(`${error}`);
+        }
+    }
+
+    obstacleAt(pos, size) {
+      try {
+        if (pos instanceof Vector === false || size instanceof Vector === false)  {
+            throw `Неверно передан аргумент`;
+        } 
+        
+        
+      } catch (error) {
+        console.log(`${error}`);
+      }
+    }
+
+    removeActor(element) {
+        let position = this.actors.indexOf(element);
+        if (position > 0) {
+            return this.actors.splice(position, 1);
+        }
+    }
+
+    noMoreActors(type) {
+        return this.actors.find((actor) => actor.type === type ? false : true);
+    }
+
+    playerTouched() {
+        if (type === 'lava' || type === 'fireball') {
+            this.status = 'lost';
+        }
+        if (type === 'coin') {
+            this.removeActor(actor);
+
+            if (this.noMoreActors(type)) {
+                this.status = 'won';
+            }
+        }
+    }
+}
