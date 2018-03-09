@@ -5,46 +5,31 @@ class Vector {
     }
 
     plus(vector) {
-        try {
-            if (vector instanceof Vector === false) {
-                throw `Можно прибавлять к вектору только вектор типа Vector`;
-            }
-            let x = vector.x + this.x;
-            let y = vector.y + this.y;
-            return new Vector(x, y);
-        } catch (error) {
-            console.log(`${error}`);
+        
+        if (vector instanceof Vector === false) {
+            throw  new Error (`Можно прибавлять к вектору только вектор типа Vector`);
         }
+        let x = vector.x + this.x;
+        let y = vector.y + this.y;
+        return new Vector(x, y);
     }
 
     times(number) {
-        try {
-            if (typeof number !== 'number') {
-                throw `${number} не является числом`;
-            }
-            let x = this.x * number;
-            let y = this.y * number;
-            return new Vector(x, y);
-        } catch (error) {
-            console.log(`${error}`);
-      }
+        
+        let x = this.x * number;
+        let y = this.y * number;
+        return new Vector(x, y);
     }
 }
 
 class Actor {
     constructor(pos = new Vector(0, 0), size = new Vector(1, 1), speed = new Vector(0, 0)) {
-        try {
-            if (pos instanceof Vector === false || size instanceof Vector === false || speed instanceof Vector === false) {
-                throw `Неверно передан аргумент`;
-            }
-
-            this.pos = pos;
-            this.size = size;
-            this.speed = speed;
-
-        } catch (error) {
-            console.log(`${error}`);
+        if (pos instanceof Vector === false || size instanceof Vector === false || speed instanceof Vector === false) {
+            throw new Error (`Неверно передан аргумент`);
         }
+        this.pos = pos;
+        this.size = size;
+        this.speed = speed;
     }
 
     act() {
@@ -70,40 +55,72 @@ class Actor {
     get type() {
         return 'actor';
     }
-    isIntersect(item) {
-        try {
-            if (item instanceof Actor === false) {
-                throw `Неверно передан аргумент`;
-            }
-            if (item === this) {
-                return false;
-            }
-            if (this.left === item.left && this.right === item.right && this.top === item.top && this.bottom === item.bottom) {
-                return true;
-            }
-            else {
-                return false;
-            }
-
-        } catch (error) {
-            console.log(`${error}`);
+    isIntersect(actor) {
+        if (actor instanceof Actor === false) {
+            throw new Error (`Неверно передан аргумент`);
         }
+        if (actor === this) {
+            return false;
+        }
+       /*  if (this.left === actor.left || this.right === actor.right || 
+            this.top === actor.top || this.bottom === actor.bottom) {
+            return false;
+            }
+        if ((actor.left >= this.left && actor.right <= this.right) && (actor.top >= this.top && actor.bottom <= this.bottom)) {
+            return true;
+        } 
+        else {
+            return false;
+        } */ 
+        if (this.left === actor.left || this.right === actor.right ||
+            this.top === actor.top || this.bottom === actor.bottom) {
+            return false;
+        }
+        if ((actor.left >= this.left && actor.right <= this.right && actor.top >= this.top && actor.bottom <= this.bottom) || 
+            (actor.right > this.left && actor.right < this.right && actor.top > this.top && actor.bottom < this.bottom) ||
+            (actor.right > this.left && actor.right < this.right && actor.top < this.bottom && actor.top > this.top) ||
+            (actor.right > this.left && actor.right < this.right && actor.bottom > this.top && actor.bottom < this.bottom) ||
+            (actor.left > this.left && actor.right < this.right && actor.bottom > this.top && actor.bottom < this.bottom) ||
+            (actor.left > this.left && actor.left < this.right && actor.bottom > this.top && actor.bottom < this.bottom) ||
+            (actor.left > this.left && actor.left < this.right && actor.top > this.top && actor.bottom < this.bottom) ||
+            (actor.left > this.left && actor.left < this.right && actor.top > this.top && actor.top < this.bottom) ||
+            (actor.left > this.left && actor.right < this.right && actor.top > this.top && actor.top < this.bottom)) {
+            return true;
+        }else {
+            return false;
+        }
+
+        
     }
 }
 
 function getPlayer(actors) {
-    let player = actors.find((el) => el.type === 'player');
-    return player;
+    if (typeof actors !== 'undefined') {
+        let player = actors.find((el) => (el.type === 'player'));
+        return player;
+    }
 }
 
 function getWidth(grid) {
     let maxWidth = 0;
-    grid.map((el) => {
-        if (el.length > maxWidth) {
-            maxWidth = el.length;
-        }
-    });
+    if (typeof grid === 'undefined') {
+        return maxWidth;
+    } else {
+        grid.map((el) => {
+            if (el.length > maxWidth) {
+                maxWidth = el.length;
+            }
+        });
+    }
     return maxWidth;
+}
+
+function getHeight(grid) {
+    if (typeof grid === 'undefined') {
+        return 0;
+    } else {
+        return grid.length;
+    }
 }
 
 class Level {
@@ -111,7 +128,7 @@ class Level {
         this.grid = grid;
         this.actors = actors;
         this.player = getPlayer(actors);
-        this.height = grid.length;
+        this.height = getHeight(grid);
         this.width = getWidth(grid);
         this.status = null;
         this.finishDelay = 1;
@@ -126,47 +143,65 @@ class Level {
     }
 
     actorAt(actor) {
-        try {
-            if (typeof actor === 'undefined' || actor instanceof Actor === false) {
-                throw `Неверно передан аргумент`;
+       if(actor instanceof Actor === false || typeof actor === 'undefined') {
+           throw new Error(`Неверно передан аргумент`);
+       }
+       if(this.height === 0) {
+           return undefined;
+       }
+       let result;  
+       this.actors.map(function(element) {
+            if(actor.isIntersect(element)){
+                result = element;
             }
-
-            if (this.isIntersect(actor)) {
-                return actor;
-            }
-            else {
-                return undefined;
-            }
-
-        } catch (error) {
-            console.log(`${error}`);
-        }
+       });
+       return result;
     }
 
+
     obstacleAt(pos, size) {
-      try {
+      
         if (pos instanceof Vector === false || size instanceof Vector === false)  {
-            throw `Неверно передан аргумент`;
+            throw new Error (`Неверно передан аргумент`);
         } 
-        
-        
-      } catch (error) {
-        console.log(`${error}`);
-      }
+        if(pos.y + size.y >= this.height) {
+            return 'lava';
+        } else if (pos.x < 0 || pos.x + size.x > 0 || pos.y > 0) {
+            return 'wall';
+        } else {
+            return 'undefined';
+        } 
+
+     
     }
 
     removeActor(element) {
         let position = this.actors.indexOf(element);
-        if (position > 0) {
+        if (position !== -1) {
             return this.actors.splice(position, 1);
         }
     }
 
     noMoreActors(type) {
-        return this.actors.find((actor) => actor.type === type ? false : true);
+        let result = true;
+        if (typeof this.actors === 'undefined' ) {
+            return result;
+        }
+        /* this.actors.map(function (actor) {
+            if (actor.type === type) {
+                result = false;
+            }
+        }); */
+        for (let i = 0; i < this.actors.length; i++) {
+            if (actor.isIntersect(this.actors[i])) {
+                result = this.actors[i];
+                break;
+            }
+        }
+        return result;
     }
 
-    playerTouched() {
+    playerTouched(type, actor) {
         if (type === 'lava' || type === 'fireball') {
             this.status = 'lost';
         }
@@ -179,3 +214,59 @@ class Level {
         }
     }
 }
+
+
+class LevelParser {
+    constructor(dictionary) {
+        this['x'] = 'x';
+        this['y'] = 'Mushroom';
+        this['!'] = '!';
+        this['@'] = '@';
+        this['o'] = 'o';
+        this['='] = '=';
+        this['|'] = '|';
+        this['v'] = 'v';
+    }
+
+    actorFromSymbol(symbol) {
+        if (this[symbol]) {
+            return this[symbol];
+        }
+        else {
+            return undefined;
+        }
+    }
+
+    obstacleFromSymbol(symbol) {
+        let result;
+        if (this[symbol]) {
+            switch (symbol) {
+                case 'x':
+                    result = 'wall';
+                    break;
+                case '!':
+                    result = 'lava';
+                    break;
+                case '=':
+                    result = 'horizontal lightning';
+                    break;
+                case '|':
+                    result = 'vertical lightning';
+                    break;
+                case 'v':
+                    result = 'fiery rain';
+            }
+            return result;
+        } else {
+            return undefined;
+        }
+    }
+
+    createGrid() {
+
+    }
+
+    createActors() {
+
+    }
+} 
