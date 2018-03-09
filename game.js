@@ -150,11 +150,17 @@ class Level {
            return undefined;
        }
        let result;  
-       this.actors.map(function(element) {
+       /* this.actors.map(function(element) {
             if(actor.isIntersect(element)){
                 result = element;
             }
-       });
+       }); */
+        for (let i = 0; i < this.actors.length; i++) {
+            if (actor.isIntersect(this.actors[i])) {
+                result = this.actors[i];
+                break;
+            }
+        }
        return result;
     }
 
@@ -187,17 +193,11 @@ class Level {
         if (typeof this.actors === 'undefined' ) {
             return result;
         }
-        /* this.actors.map(function (actor) {
+        this.actors.map(function (actor) {
             if (actor.type === type) {
                 result = false;
             }
-        }); */
-        for (let i = 0; i < this.actors.length; i++) {
-            if (actor.isIntersect(this.actors[i])) {
-                result = this.actors[i];
-                break;
-            }
-        }
+        }); 
         return result;
     }
 
