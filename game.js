@@ -233,7 +233,7 @@ class Level {
 
 class LevelParser {
     constructor(dictionary) {
-        
+
         this['x'] = 'x';
         this['!'] = '!';
         this['@'] = '@';
@@ -277,11 +277,33 @@ class LevelParser {
         }
     }
 
-    createGrid() {
-
+    createGrid(field) {
+        return field.map((item) => {
+            return item.split('').map((element) => {
+                let value = this.obstacleFromSymbol(element);
+                if(value === 'wall' || value === 'lava') {
+                    return value;
+                } else {
+                    return undefined;
+                }
+            });
+        });
     }
 
-    createActors() {
-
+    createActors(acotrs) {
+        let result = [];
+        field.map((item, i) => {
+            return item.split('').map((element, j) => {
+                let value = this.obstacleFromSymbol(element);
+                if (value !== 'wall' || value !== 'lava') {
+                    let actor = new Vector(j, i)
+                    result.push(actor);
+                }
+            });
+        });
+        return result;
+    }
+    parse(data) {
+        return new Level(this.createGrid(data), this.createActors(data));
     }
 } 
