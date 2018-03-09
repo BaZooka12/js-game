@@ -172,12 +172,27 @@ class Level {
         } 
         if(pos.y + size.y >= this.height) {
             return 'lava';
-        } else if (pos.x < 0 || pos.x + size.x > 0 || pos.y > 0) {
+        } else if (pos.x < 0 || (pos.x + size.x >= this.width) || pos.y < 0) {
             return 'wall';
-        } else {
-            return 'undefined';
-        } 
+        }  
+        let top = Math.floor(pos.y);
+        let bottom = Math.ceil(pos.y + size.y);
+        let left = Math.floor(pos.x);
+        let right = Math.ceil(pos.x + size.x);
 
+        for (let i = top; i < bottom; i++) {
+            for (let j = left; j < right; j++) {
+                let row = this.grid[i];
+                if (row) {
+                    let obstacle = row[j];
+                    if (obstacle) {
+                        return obstacle;
+                    }
+                }
+            }
+        }
+
+        return undefined;
      
     }
 
@@ -218,8 +233,8 @@ class Level {
 
 class LevelParser {
     constructor(dictionary) {
+        
         this['x'] = 'x';
-        this['y'] = 'Mushroom';
         this['!'] = '!';
         this['@'] = '@';
         this['o'] = 'o';
