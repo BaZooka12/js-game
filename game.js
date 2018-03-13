@@ -71,7 +71,7 @@ class Actor {
         } 
         else {
             return false;
-        } */ 
+        }*/ 
         if (this.left === actor.left || this.right === actor.right ||
             this.top === actor.top || this.bottom === actor.bottom) {
             return false;
