@@ -345,6 +345,7 @@ class Player extends Actor{
 }
 
 
+
 const actorDict = {
     '@': Player,
     'o': Coin,
