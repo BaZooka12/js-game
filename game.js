@@ -64,32 +64,13 @@ class Actor {
         if (actor === this) {
             return false;
         }
-        if (this.left === actor.left || this.right === actor.right ||
-            this.top === actor.top || this.bottom === actor.bottom) {
+        if (actor.left >= this.right || actor.right <= this.left || actor.top >= this.bottom || actor.bottom <= this.top) {
             return false;
-        }
-        if ((actor.left >= this.left && actor.right <= this.right && actor.top >= this.top && actor.bottom <= this.bottom) ||
-            (actor.right > this.left && actor.right < this.right && actor.top > this.top && actor.bottom < this.bottom) ||
-            (actor.right > this.left && actor.right < this.right && actor.top < this.bottom && actor.top > this.top) ||
-            (actor.right > this.left && actor.right < this.right && actor.bottom > this.top && actor.bottom < this.bottom) ||
-            (actor.left > this.left && actor.right < this.right && actor.bottom > this.top && actor.bottom < this.bottom) ||
-            (actor.left > this.left && actor.left < this.right && actor.bottom > this.top && actor.bottom < this.bottom) ||
-            (actor.left > this.left && actor.left < this.right && actor.top > this.top && actor.bottom < this.bottom) ||
-            (actor.left > this.left && actor.left < this.right && actor.top > this.top && actor.top < this.bottom) ||
-            (actor.left > this.left && actor.right < this.right && actor.top > this.top && actor.top < this.bottom)) {
-            return true;
         } else {
-            return false;
+            return true;
         }
-    }
+    } 
 
-}
-
-function getPlayer(actors) {
-    if (typeof actors !== 'undefined') {
-        let player = actors.find((actor) => (actor.type === 'player'));
-        return player;
-    }
 }
 
 function getWidth(grid) {
@@ -106,20 +87,12 @@ function getWidth(grid) {
     return maxWidth;
 }
 
-function getHeight(grid) {
-    if (typeof grid === 'undefined') {
-        return 0;
-    } else {
-        return grid.length;
-    }
-}
-
 class Level {
-    constructor(grid, actors) {
+    constructor(grid = [], actors = []) {
         this.grid = grid;
         this.actors = actors;
-        this.player = getPlayer(actors);
-        this.height = getHeight(grid);
+        this.player = actors.find(actor => actor.type === 'player');
+        this.height = grid.length;
         this.width = getWidth(grid);
         this.status = null;
         this.finishDelay = 1;
@@ -133,18 +106,12 @@ class Level {
         }
     }
 
-     actorAt(actor) {
-       if(actor instanceof Actor === false || typeof actor === 'undefined') {
-           throw new Error(`Неверно передан аргумент`);
-       }
-        let result;
-        for (let i = 0; i < this.actors.length; i++) {
-        if (actor.isIntersect(this.actors[i])) {
-            result = this.actors[i];
-            break;
-            }
+    actorAt(actor) {
+        if (!(actor instanceof Actor) || !actor) {
+            throw new Error(`Неверно передан аргумент`);
         }
-        return result; 
+        let result = this.actors.find(item => item.isIntersect(actor));
+        return result;
     }
 
     obstacleAt(pos, size) {
@@ -175,7 +142,6 @@ class Level {
         }
 
         return undefined;
-     
     }
 
     removeActor(element) {
@@ -214,17 +180,8 @@ class Level {
 
 
 class LevelParser {
-    constructor(dictionary) {
-        if (dictionary) { 
-            this.dictionary = dictionary;
-        }
-        this['x'] = 'wall';
-        this['!'] = 'lava';
-        this['@'] = 'Player';
-        this['o'] = 'Coin';
-        this['='] = 'HorizontalFireball';
-        this['|'] = 'VerticalFireball';
-        this['v'] = 'Fireball';
+    constructor(dictionary) { 
+        this.dictionary = dictionary;
     }
 
     actorFromSymbol(symbol) {
@@ -235,7 +192,16 @@ class LevelParser {
     }
 
     obstacleFromSymbol(symbol) {
-        return this[symbol];
+        switch(symbol) {
+            case 'x':
+                return 'wall';
+                break;
+            case '!':
+                return 'lava';
+                break;
+            default:
+                return undefined;
+        }
     }
 
     createGrid(field) {
@@ -379,24 +345,6 @@ class Player extends Actor{
 }
 
 
-const schema = [
-    "     v                 ",
-    "                       ",
-    "                       ",
-    "                       ",
-    "                       ",
-    "  |xxx       w         ",
-    "  o                 o  ",
-    "  x               = x  ",
-    "  x          o o    x  ",
-    "  x  @    *  xxxxx  x  ",
-    "  xxxxx             x  ",
-    "      x!!!!!!!!!!!!!x  ",
-    "      xxxxxxxxxxxxxxx  ",
-    "                       "
-];
-
-
 const actorDict = {
     '@': Player,
     'o': Coin,
@@ -404,7 +352,9 @@ const actorDict = {
     '|': VerticalFireball,
     'v': Fireball
 }
-const parser = new LevelParser(actorDict);
-const level = parser.parse(schema);
-runLevel(level, DOMDisplay)
-    .then(status => console.log(`Игрок ${status}`));
+loadLevels()
+    .then(function (resolved) {
+        const parser = new LevelParser(actorDict);
+        runGame(JSON.parse(resolved), parser, DOMDisplay)
+            .then(() => alert('Вы выиграли приз!'));
+    });
